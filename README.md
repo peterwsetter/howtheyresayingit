@@ -10,6 +10,5 @@ News outlets are often accused of bias. In most cases, this bias refers to how t
 
 Rmd/ houses rmarkdown files for the project website
 
-doc/ houses html files of the project website
+docs/ houses html files of the project website
 
-docs/ 
