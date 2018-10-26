@@ -1,0 +1,7 @@
+name: "my-website"
+output_dir: "../docs/"
+navbar:
+  title: "How They're Saying It"
+  left:
+    - text: "Home"
+      href: index.html
