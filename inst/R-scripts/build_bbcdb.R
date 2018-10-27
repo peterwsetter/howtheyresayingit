@@ -55,3 +55,11 @@ process_file <- function(file_name, db_con) {
     dbWriteTable(db_con, 'article_content', value = ., append = TRUE)
 }
 
+# Get list of files to process
+list.files(path = '../../data/BBC News Summary/News Articles',
+           full.names = TRUE,
+           recursive = TRUE) %>% 
+  # Write data to database
+  map(~process_file(.x, con))
+
+dbDisconnect(con, shutdown=TRUE)
