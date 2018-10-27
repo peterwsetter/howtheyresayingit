@@ -13,20 +13,45 @@ dbdir <- "../../data/bbcdb"
 
 con <- dbConnect(MonetDBLite::MonetDBLite(), dbdir)
 
-file_name <- '../../data/BBC News Summary/News Articles/politics/001.txt'
+#' Declare tables
+#' articles includes article_id, topic, headline, and lead
+#' article_content includes paragraphs, will be used for further tokenization
 
-article <- readLines(file_name) %>% 
-  .[. != '']
+dbSendQuery(con,
+              "CREATE TABLE articles (
+              article_id varchar(20) PRIMARY KEY,
+              topic varchar(10),
+              headline text,
+              lead text
+              )")
 
-topic <- str_extract(file_name, '(?<=News Articles/).*(?=/)')
-article_num <- str_extract(file_name, '\\d{3}')
-article_id <- paste0(topic, article_num)
+dbSendQuery(con,
+            "CREATE TABLE article_content (
+            article_id varchar(20),
+            paragraph_num int,
+            paragraph_text text)
+            ")
 
-data_frame(
-  line = seq(1, length(article)),
-  text = article
-) %>% 
-  View()
+# Define function to write information to database
 
-
+process_file <- function(file_name, db_con) {
+  article <- readLines(file_name) %>% 
+    .[. != '']
+  
+  topic <- str_extract(file_name, '(?<=News Articles/).*(?=/)')
+  article_num <- str_extract(file_name, '\\d{3}')
+  article_id <- paste0(topic, article_num)
+  
+  data_frame(article_id = article_id,
+             topic = topic,
+             headline = article[1],
+             lead = article[2]) %>% 
+    dbWriteTable(db_con, 'articles', value = ., append = TRUE)
+  
+  data_frame(paragraph_text = article[3:length(article)]) %>% 
+    tibble::rowid_to_column('paragraph_num') %>% 
+    mutate(article_id = article_id) %>% 
+    select(article_id, paragraph_num, paragraph_text) %>% 
+    dbWriteTable(db_con, 'article_content', value = ., append = TRUE)
+}
 
