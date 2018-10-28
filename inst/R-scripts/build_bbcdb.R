@@ -29,7 +29,8 @@ dbSendQuery(con,
             "CREATE TABLE article_content (
             article_id varchar(20),
             paragraph_num int,
-            paragraph_text text)
+            paragraph_text text,
+            PRIMARY KEY(article_id, paragraph_num))
             ")
 
 # Define function to write information to database
