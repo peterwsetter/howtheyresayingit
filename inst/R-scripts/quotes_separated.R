@@ -14,7 +14,7 @@ con <- dbConnect(MonetDBLite::MonetDBLite(), dbdir)
 paragraphs <- tbl(con, 'article_content') %>% 
   collect() 
 
-quote_regex <- '"[:alpha:].*[[:alpha:]|[:punct:]]".{0,1}'
+quote_regex <- '"[:alpha:].*[:alpha:][:punct:]{0,1}"[:punct:]{0,1}'
 
 paragraphs %>% 
   unnest_tokens(output = sentence_text,

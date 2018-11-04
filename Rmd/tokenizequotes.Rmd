@@ -1,0 +1,50 @@
+---
+title: "Identifying and Tokenizing Quotes in News Text"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+Last Updated: November 11, 2018
+
+## Background
+
+In support of the larger goal of analyzing the sentiment of news articles, I wanted to begin by developing a work flow on a relatively easy dataset before developing a web-scraping script and applying these techniques to headlines and articles from various times.
+
+One set of questions I want to investigate revolves around quotes:
+
+- What topics are most commented on?
+- What is the sentiment and word choice in those comments?
+- Who is being quoted?
+
+This post will use the `stringr` and `tidytext` packages, amongst others, to **transform a table containing paragraph text into word-level tokenized text with quotes identified.**
+
+I decided to use the [BBC News Summary](https://www.kaggle.com/pariza/bbc-news-summary) dataset from Kaggle. The main advantage of this dataset is its uniform structure.
+
+- Article text are stored in plain text files. No worries about formatting or extraneous material.
+- Each articles contains the headline, the lead, and three or four paragraphs.
+- Articles are organized into topic: business, entertainment, politics, sport, and tech. Each file has a number but not associated publication date.
+
+The first step in this phase of the project involved creating two database tables: `articles` and `article_content`. `articles` contains the `article_id`, `topic`, `headline`, and `lead`, and `article_content` included the `paragraph_text` identified by the `article_id` and `paragraph_num`.
+
+## The Regular Expression
+
+My strategy for identifying quotes is to extract/replace them using `"` as a marker. The key is a regular expression that can capture the beginning and ending of a quote.
+
+In plain text, the opening `"` will be immediately followed by a alphabetic character. There are two ways of representing this: `"[A-z]` or `"[:alpha:]`. The former uses a character range, while the latter uses a POSIX character class. 
+
+Identifying a closing `"` is slightly more difficult since puncuation may proceed or follow it. Before the `"`, we'll see a alphabetic with zero or one puncutation marks; this is represented in a regular expression as `[:alpha:][:punct:]{0,1}"`. Similarily, an optional punctuation mark after a quote is represented as `[:punct:]{0,1}`. 
+
+The interior text can be represented with a simple wildcard character, wildcard number regular expression: `.*`. Putting it all together, the regular expression is:
+
+`"[:alpha:].*[:alpha:][:punct:]{0,1}"[:punct:]{0,1}`
+
+```{r}
+
+```
+
+```{r shutdown}
+dbDisconnect(con, shutdown=TRUE)
+```

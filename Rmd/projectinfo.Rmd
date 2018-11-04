@@ -3,3 +3,7 @@ output: html_document
 ---
 
 [Github Repo](https://github.com/peterwsetter/howtheyresayingit)
+
+For this project, I decided to use [MonetDBLite](https://www.monetdb.org/blog/monetdblite-r). Like SQLite, MonetDBLite is a file-based system that can be run from within another application. I've used `RSQLite` in the past, and I loved beginning able to quickly setup a database within R without having to manage a database server. `MonetDBLite` provides this functionality along with the features of a modern database, including proper `date` types. 
+
+The [Github README](https://github.com/hannesmuehleisen/MonetDBLite-R) provides everything you need to know to get started.
