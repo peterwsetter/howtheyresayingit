@@ -60,12 +60,19 @@ tbl(con, 'articles') %>%
     token = 'words'
   ) %>% 
   # Remove stop words
-  anti_join(stop_words) %>% 
+  anti_join(stop_words) ->
+  headlines
+
+headlines %>% 
   group_by(word) %>% 
   count() %>% 
-  arrange(desc(n)) %>% 
-  View()
+  filter(n > 5) %>% 
+  arrange(desc(n)) %>% View()
 ```
+
+The `labour` Party and the `tories` (Conservatives) are two major political parties in the `uk`. This data comes from 2004-2005, when Labour was led by Prime Minister Tony `blair` in a general `election` against the the Michael Howard-led `party` Party and the Charles `kennedy`-led `lib` `dem`s (Liberal Democrats). Gerald `brown` and David `Blunkett` were senior officials in the Labour government.
+
+To furthur focus the analysis, 
 
 ## Identifying Quotes
 
