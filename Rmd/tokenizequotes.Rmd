@@ -1,35 +1,73 @@
 ---
-title: "Identifying and Tokenizing Quotes in News Text"
+title: "Who's Being Talked About?: Identifying and Analyzing Quotes in News Text"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 Last Updated: November 11, 2018
 
 ## Background
 
-In support of the larger goal of analyzing the sentiment of news articles, I wanted to begin by developing a work flow on a relatively easy dataset before developing a web-scraping script and applying these techniques to headlines and articles from various times.
+How information is included in an article is a major choice in its writing. In addition to the framing and balance of sources, the journalist must decide when to use a quote and when to paraphrase a source. Direct quotes can be powerful, potentially driving the readers' take-away from an article; however, the sentiment of quotes may be offset by the framing of the writer.
 
-One set of questions I want to investigate revolves around quotes:
-
-- What topics are most commented on?
-- What is the sentiment and word choice in those comments?
-- Who is being quoted?
-
-This post will use the `stringr` and `tidytext` packages, amongst others, to **transform a table containing paragraph text into word-level tokenized text with quotes identified.**
+This post will use the `stringr` and `tidytext` packages, amongst others, to identify quotes within news articles and compare the sentiment of quotes compared to the remainder of the article.
 
 I decided to use the [BBC News Summary](https://www.kaggle.com/pariza/bbc-news-summary) dataset from Kaggle. The main advantage of this dataset is its uniform structure.
 
-- Article text are stored in plain text files. No worries about formatting or extraneous material.
+- Article text is stored in plain text files. No worries about formatting or extraneous material.
 - Each articles contains the headline, the lead, and three or four paragraphs.
-- Articles are organized into topic: business, entertainment, politics, sport, and tech. Each file has a number but not associated publication date.
 
-The first step in this phase of the project involved creating two database tables: `articles` and `article_content`. `articles` contains the `article_id`, `topic`, `headline`, and `lead`, and `article_content` included the `paragraph_text` identified by the `article_id` and `paragraph_num`.
+The first step of the project involved creating two database tables: `articles` and `article_content`. `articles` contains the `article_id`, `topic`, `headline`, and `lead`, and `article_content` included the `paragraph_text` identified by the `article_id` and `paragraph_num`.
 
-## The Regular Expression
+```{r}
+library(dplyr)
+library(DBI)
+library(MonetDBLite)
+
+dbdir <- '../../data/bbcdb/'
+
+con <- dbConnect(MonetDBLite::MonetDBLite(), dbdir)
+
+tbl(con, 'articles')
+```
+
+```{r}
+tbl(con, 'article_content') 
+```
+
+## What's Being Written About?
+
+The headlines can be used to identify the important keywords from this time. To simplify the analysis, the focus will be articles from the "Politics" topic.
+
+To identify keywords, I will tokenize the headlines using the `tidytext` package, remove stop words, and perform a straightforward count.
+
+```{r}
+library(tidytext)
+
+data(stop_words)
+
+tbl(con, 'articles') %>% 
+  # Only interested in the headlines of politics articles.
+  filter(topic == 'politics') %>% 
+  select(headline) %>% 
+  collect() %>% 
+  unnest_tokens(
+    output = word,
+    input = headline,
+    token = 'words'
+  ) %>% 
+  # Remove stop words
+  anti_join(stop_words) %>% 
+  group_by(word) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  View()
+```
+
+## Identifying Quotes
 
 My strategy for identifying quotes is to extract/replace them using `"` as a marker. The key is a regular expression that can capture the beginning and ending of a quote.
 
@@ -40,10 +78,6 @@ Identifying a closing `"` is slightly more difficult since puncuation may procee
 The interior text can be represented with a simple wildcard character, wildcard number regular expression: `.*`. Putting it all together, the regular expression is:
 
 `"[:alpha:].*[:alpha:][:punct:]{0,1}"[:punct:]{0,1}`
-
-```{r}
-
-```
 
 ```{r shutdown}
 dbDisconnect(con, shutdown=TRUE)
